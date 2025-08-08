@@ -5,10 +5,9 @@ import numpy as np
 from ultralytics import YOLO
 
 # -- set configuration --
-
 # Serial port configuration
 SERIAL_PORT = '/dev/ttyUSB0' # set serial port (change according to raspi)
-BAUD_RATE = 9600
+BAUD_RATE = 9600 # set data transmission speed (change according to arduino)
 
 # detection threshold configuration
 DETECTION_THRESHOLD_CM = 15 # threshold for trash detection (change accoridng to the structure)
@@ -19,19 +18,23 @@ MODEL_PATH = "best_float32.tflite"
 # -- Function --
 def classification(frame, model):
     # predict
-	results = model.predict(frame, imgsz=320)
-    
-	for box in results[0].boxes:
-		if box.conf[0] > highest_confidence:
-			highest_confidence = box.conf[0]
-			best_detection = box
+    results = model.predict(frame, imgsz=320)
+    highest_confidence = 0.0 
+    best_detection = None
+
+    for box in results[0].boxes:
+        if box.conf[0] > highest_confidence:
+            highest_confidence = box.conf[0]
+            best_detection = box
         
-                # If an object was found, print its details
-		if best_detection is not None:
-			class_id = int(best_detection.cls[0])
-			confidence = best_detection.conf[0]
+    # If an object was found, print its details
+    if best_detection is not None:
+        class_id = int(best_detection.cls[0])
+        confidence = best_detection.conf[0]
     
-	return class_id, confidence
+        return class_id, confidence
+    
+    return None, 0.0
 
 # -- Main Program --
 if __name__ == '__main__':
@@ -56,7 +59,7 @@ if __name__ == '__main__':
             # Check if there is data in serial
             if ser.in_waiting > 0:
                 # get Arduino data
-                line = ser.readline().deacode('utf-8').rstrip()
+                line = ser.readline().decode('utf-8').rstrip()
                 try:
                     dist = int(line)
                     print(f"Distance received {dist} cm")

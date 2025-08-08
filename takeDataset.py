@@ -17,7 +17,9 @@ while True:
     if not ret:
         print("Failed to gram frame")
         break
-
+    
+    # resize the image
+    frame = cv2.resize(frame, (640, 640))
     # show the video
     cv2.imshow("camera", frame)
 
@@ -26,8 +28,9 @@ while True:
     # save images
     if key == ord('s'):
         # save image 
-        cv2.imwrite(f"images/namaBenda{count}.jpg", frame)
+        cv2.imwrite(f"/home/muhnatha/Documents/images_SmartTrashBin/paper/paper{count}.jpg", frame)
         print("saved")
+        count = count+1
     # exit
     elif key == ord('q'):
         break
