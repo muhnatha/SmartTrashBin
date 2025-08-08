@@ -77,6 +77,9 @@ if __name__ == '__main__':
                         # classificate the image
                         class_id, conf = classification(frame, model)
                         
+                        # print result
+                        print(f"Detected {class_id} with {conf} % confidence")
+                        
                         # cooldown for sensor
                         time.sleep(3)
                         ser.flushInput()
