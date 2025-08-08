@@ -60,31 +60,32 @@ if __name__ == '__main__':
             if ser.in_waiting > 0:
                 # get Arduino data
                 line = ser.readline().decode('utf-8').rstrip()
-                try:
-                    dist = int(line)
-                    print(f"Distance received {dist} cm")
-
-                    # check the threshold
-                    if 0 < dist < DETECTION_THRESHOLD_CM:
-                        print("OBJECT DETECTED")
-                        time.sleep(1)
-
-                        ret, frame = cap.read() 
-                        if not ret:
-                            print("ERROR, FAILE to grab frame")
-                            continue
-                        
-                        # classificate the image
-                        class_id, conf = classification(frame, model)
-                        
-                        # print result
-                        print(f"Detected {class_id} with {conf} % confidence")
-                        
-                        # cooldown for sensor
-                        time.sleep(3)
-                        ser.flushInput()
-                except (ValueError, IndexError):
-                    print(f"Invalid serial data: {line}")
+        
+                # check the arduino message
+                if line == "Barang Masuk":
+                    print("OBJECT DETECTED, starting camera")
+                    time.sleep(1)
+                    ret, frame = cap.read() 
+                    if not ret:
+                        print("ERROR, FAILE to grab frame")
+                        continue
+                    
+                    # classificate the image
+                    class_id, conf = classification(frame, model)
+                    
+                    # print result
+                    print(f"Detected {class_id} with {conf} % confidence")
+                    
+                    # cooldown for sensor
+                    time.sleep(3)
+                    ser.flushInput()
+                    
+                elif line == "Tidak Ada Barang":
+                    # This is the normal idle state, no need to print anything
+                    pass # Do nothing and wait for the next signal
+                
+                elif line: # Catches any other unexpected data
+                    print(f"Received unexpected data from Arduino: {line}")
                 
     except KeyboardInterrupt:
         print("\nProgram stopped by user")
