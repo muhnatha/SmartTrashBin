@@ -62,7 +62,7 @@ if __name__ == '__main__':
                 line = ser.readline().decode('utf-8').rstrip()
         
                 # check the arduino message
-                if line == "Barang Masuk":
+                if "Barang Masuk" in line:
                     print("OBJECT DETECTED, starting camera")
                     time.sleep(1)
                     ret, frame = cap.read() 
@@ -80,7 +80,7 @@ if __name__ == '__main__':
                     time.sleep(3)
                     ser.flushInput()
                     
-                elif line == "Tidak Ada Barang":
+                elif "Tidak Ada Barang" in line:
                     # This is the normal idle state, no need to print anything
                     pass # Do nothing and wait for the next signal
                 
