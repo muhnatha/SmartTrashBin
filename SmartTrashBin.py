@@ -7,7 +7,7 @@ from ultralytics import YOLO
 # -- set configuration --
 # Serial port configuration
 SERIAL_PORT = '/dev/ttyUSB0' # set serial port (change according to raspi)
-BAUD_RATE = 9600 # set data transmission speed (change according to arduino)
+BAUD_RATE = 115200 # set data transmission speed (change according to arduino)
 
 # detection threshold configuration
 DETECTION_THRESHOLD_CM = 15 # threshold for trash detection (change accoridng to the structure)
