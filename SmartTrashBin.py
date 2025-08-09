@@ -40,7 +40,7 @@ def classification(frame, model):
 if __name__ == '__main__':
     try:
         # initialize connection
-        ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+        ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1, dtr=False)
         ser.flush() # clear any old data
         print(f"successfuly connected to Arduino on {SERIAL_PORT}")
 
@@ -93,6 +93,12 @@ if __name__ == '__main__':
         print(f"An error occured: {e}")
     finally:
         if ser and ser.is_open:
-            ser.close()
+            print("Pulsing DTR to reset Arduino...")
+            ser.dtr = True  # Set DTR high
+            time.sleep(0.1) # Wait a tenth of a second
+            ser.dtr = False # Set DTR low to trigger reset
+            ser.close()     # Now close the port
+            print("Serial port closed.")
         if cap:
             cap.release()
+            print("Camera released.")
