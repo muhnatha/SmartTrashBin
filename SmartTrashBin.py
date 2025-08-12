@@ -7,10 +7,7 @@ from ultralytics import YOLO
 # -- set configuration --
 # Serial port configuration
 SERIAL_PORT = '/dev/ttyUSB0' # set serial port (change according to raspi)
-BAUD_RATE = 115200 # set data transmission speed (change according to arduino)
-
-# detection threshold configuration
-DETECTION_THRESHOLD_CM = 15 # threshold for trash detection (change accoridng to the structure)
+BAUD_RATE = 9600 # set data transmission speed (change according to arduino)
 
 # Vision model configuration
 MODEL_PATH = "best_float32.tflite"
@@ -54,15 +51,25 @@ if __name__ == '__main__':
         model = YOLO(MODEL_PATH)
         print("waiting for HCSR")
         
+        # initialize distance
+        prev_dist = -1
+        curr_dist = None
+        diff = 5 # difference 5 cm
+        
         # main loop (idle until HCSR detect object)
         while True:
             # Check if there is data in serial
             if ser.in_waiting > 0:
                 # get Arduino data
                 line = ser.readline().decode('utf-8').rstrip()
-        
+                
+                # check if  prev_dist already initialize
+                if prev_dist == -1:
+                    prev_dist = float(line)
+
                 # check the arduino message
-                if "Barang Masuk" in line:
+                curr_dist = float(line)
+                if abs(prev_dist - curr_dist) > diff:
                     print("OBJECT DETECTED, starting camera")
                     time.sleep(1)
                     ret, frame = cap.read() 
@@ -73,20 +80,19 @@ if __name__ == '__main__':
                     # classificate the image
                     class_id, conf = classification(frame, model)
                     
-                    # print result
-                    print(f"Detected {class_id} with {conf} % confidence")
-                    
+                    # send the class to Arduino
+                    if class_id  is not None:
+                        # print result
+                        print(f"Detected {class_id} with {conf} % confidence")
+                        command = f"{class_id}"
+                        ser.write(command.encode('utf-8'))
+                    else:
+                        print("No object detected")
+                        
                     # cooldown for sensor
                     time.sleep(3)
                     ser.flushInput()
                     
-                elif "Tidak Ada Barang" in line:
-                    # This is the normal idle state, no need to print anything
-                    pass # Do nothing and wait for the next signal
-                
-                elif line: # Catches any other unexpected data
-                    print(f"Received unexpected data from Arduino: {line}")
-                
     except KeyboardInterrupt:
         print("\nProgram stopped by user")
     except Exception as e:
