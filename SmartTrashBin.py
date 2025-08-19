@@ -12,6 +12,12 @@ BAUD_RATE = 9600 # set data transmission speed (change according to arduino)
 # Vision model configuration
 MODEL_PATH = "best_float32.tflite"
 
+# Class name
+CLASS_NAMES = [
+    "cans", "cardbox", "food_scraps", "glass_like_plastic", 
+    "paper_material", "plastic"
+]
+
 # -- Function --
 def classification(frame, model):
     # predict
@@ -62,6 +68,10 @@ if __name__ == '__main__':
             if ser.in_waiting > 0:
                 # get Arduino data
                 line = ser.readline().decode('utf-8').rstrip()
+                sensor_part = line.split('|')[0]
+                value_part = sensor_part.split(':')[1]
+                numeric_string = value_part.replace('cm', '')
+                line = numeric_string.strip()
                 
                 # check if  prev_dist already initialize
                 if prev_dist == -1:
@@ -83,9 +93,23 @@ if __name__ == '__main__':
                     # send the class to Arduino
                     if class_id  is not None:
                         # print result
-                        print(f"Detected {class_id} with {conf} % confidence")
-                        command = f"{class_id}"
-                        ser.write(command.encode('utf-8'))
+                        class_name = CLASS_NAMES[class_id]
+                        print(f"Detected {class_name} with {conf} % confidence")
+                        
+                        # Is it organic?
+                        if class_name in ["food_scraps"]:
+                            print("ORGANIC")
+                            command = "0"
+                        # Is it inorganic
+                        elif class_name in ["cans", "cardbox", "glass_like_plastic", "paper_material", "plastic"]:
+                            print("INORGANIC")
+                            command = "1"
+                        
+                        # send command to arduino
+                        if command is not None:
+                            ser.write(command.encode("utf-8"))
+                        else:
+                            print("No class detected")
                     else:
                         print("No object detected")
                         
