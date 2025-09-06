@@ -5,7 +5,7 @@ import numpy as np
 from ultralytics import YOLO
 
 # -- set configuration --
-# Serial port configuration
+# Serial port configuratio
 SERIAL_PORT = '/dev/ttyUSB0' # set serial port (change according to raspi)
 BAUD_RATE = 9600 # set data transmission speed (change according to arduino)
 
@@ -21,7 +21,7 @@ CLASS_NAMES = [
 # -- Function --
 def classification(frame, model):
     # predict
-    results = model.predict(frame, imgsz=320)
+    results = model.predict(frame, imgsz=640)
     highest_confidence = 0.0 
     best_detection = None
 
@@ -41,10 +41,10 @@ def classification(frame, model):
 
 # -- Main Program --
 if __name__ == '__main__':
+    ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+    dtr = False
+    ser.flush()
     try:
-        # initialize connection
-        ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1, dtr=False)
-        ser.flush() # clear any old data
         print(f"successfuly connected to Arduino on {SERIAL_PORT}")
 
         # initialize camera
@@ -99,15 +99,15 @@ if __name__ == '__main__':
                         # Is it organic?
                         if class_name in ["food_scraps"]:
                             print("ORGANIC")
-                            command = "0"
+                            command = 0
                         # Is it inorganic
                         elif class_name in ["cans", "cardbox", "glass_like_plastic", "paper_material", "plastic"]:
                             print("INORGANIC")
-                            command = "1"
+                            command = 1
                         
                         # send command to arduino
                         if command is not None:
-                            ser.write(command.encode("utf-8"))
+                            ser.write(bytes([command]))
                         else:
                             print("No class detected")
                     else:
