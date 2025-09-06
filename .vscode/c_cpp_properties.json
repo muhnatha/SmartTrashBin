@@ -10,8 +10,10 @@
             "includePath": [
                 "C:/Users/rifah/OneDrive/Documents/Kuliah/Capstone_Smart Trash Bin/SmartTrashBin/include",
                 "C:/Users/rifah/OneDrive/Documents/Kuliah/Capstone_Smart Trash Bin/SmartTrashBin/src",
+                "C:/Users/rifah/OneDrive/Documents/Kuliah/Capstone_Smart Trash Bin/SmartTrashBin/.pio/libdeps/nanoatmega328/Servo/src",
                 "C:/Users/rifah/.platformio/packages/framework-arduino-avr/cores/arduino",
                 "C:/Users/rifah/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
+                "C:/Users/rifah/OneDrive/Documents/Kuliah/Capstone_Smart Trash Bin/SmartTrashBin/.pio/libdeps/nanoatmega328/Unity/src",
                 "C:/Users/rifah/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
                 "C:/Users/rifah/.platformio/packages/framework-arduino-avr/libraries/HID/src",
                 "C:/Users/rifah/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
@@ -24,8 +26,10 @@
                 "path": [
                     "C:/Users/rifah/OneDrive/Documents/Kuliah/Capstone_Smart Trash Bin/SmartTrashBin/include",
                     "C:/Users/rifah/OneDrive/Documents/Kuliah/Capstone_Smart Trash Bin/SmartTrashBin/src",
+                    "C:/Users/rifah/OneDrive/Documents/Kuliah/Capstone_Smart Trash Bin/SmartTrashBin/.pio/libdeps/nanoatmega328/Servo/src",
                     "C:/Users/rifah/.platformio/packages/framework-arduino-avr/cores/arduino",
                     "C:/Users/rifah/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
+                    "C:/Users/rifah/OneDrive/Documents/Kuliah/Capstone_Smart Trash Bin/SmartTrashBin/.pio/libdeps/nanoatmega328/Unity/src",
                     "C:/Users/rifah/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
                     "C:/Users/rifah/.platformio/packages/framework-arduino-avr/libraries/HID/src",
                     "C:/Users/rifah/.platformio/packages/framework-arduino-avr/libraries/SPI/src",

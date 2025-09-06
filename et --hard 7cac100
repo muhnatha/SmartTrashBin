@@ -1,0 +1,25 @@
+[33m027d56d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Merge branch 'main' of https://github.com/muhnatha/SmartTrashBin
+[33m9727ece[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m change the model
+[33m7cac100[m apa ajalah
+[33mee3f573[m feat: sort trash logic
+[33m3425d8c[m final: done
+[33m7a1ec1f[m feat: clear ser
+[33m4784680[m fix: change the baud rate
+[33mc778d80[m fix: raspi receive message
+[33m9309231[m fix: main program arduino messages compatibility
+[33mdb07e03[m feat: add ArduinoToRaspi code
+[33m32f6c00[m feat: print classificated object
+[33ma8e64a2[m Merge branch 'main' of https://github.com/muhnatha/SmartTrashBin
+[33m3b1e78f[m fix: classification logic and typo
+[33mf64624f[m Merge branch 'main' of https://github.com/muhnatha/SmartTrashBin
+[33me2a66ee[m feat: add input ultrasonic sensor
+[33m96b7801[m feat: test model camera; fix: model ncnn -> ultralytics on SmartTrashBin.py
+[33mb3944f3[m feat: finnish general main program; - servo, model compatibility
+[33m4b99a41[m Merge branch 'main' of https://github.com/muhnatha/SmartTrashBin
+[33mc93dbca[m feat: SmartTrashbin.py (main program); - not complete
+[33mc71a4ab[m feat: add ultrasonic sensor code
+[33mbe400ac[m feat: Dockerfile
+[33m68f4abc[m feat: code to test camera
+[33m5428985[m feat: add taking image scripts
+[33m44760da[m feat: add models link
+[33m3975f2b[m Initial commit
