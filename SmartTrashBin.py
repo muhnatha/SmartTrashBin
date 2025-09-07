@@ -10,35 +10,32 @@ SERIAL_PORT = '/dev/ttyUSB0' # set serial port (change according to raspi)
 BAUD_RATE = 9600 # set data transmission speed (change according to arduino)
 
 # Vision model configuration
-MODEL_PATH = "best_float32.tflite"
+MODEL_PATH = "classification_model.tflite"
 
 # Class name
 CLASS_NAMES = [
-    "cans", "cardbox", "food_scraps", "glass_like_plastic", 
-    "paper_material", "plastic"
+    "battery", "organic_waste", "paper_cardboard", "glass",
+    "metal", "plastic", "textiles", "trash"
 ]
 
 # -- Function --
 def classification(frame, model):
     # predict
-    results = model.predict(frame, imgsz=640)
-    highest_confidence = 0.0 
-    best_detection = None
+    results = model.predict(frame, imgsz=224)
 
-    for box in results[0].boxes:
-        if box.conf[0] > highest_confidence:
-            highest_confidence = box.conf[0]
-            best_detection = box
+    # Check if a classification was made
+    if results[0].probs is not None:
+        # FIX: For TFLite, get the raw probability tensor and find the max
+        # Get the index of the highest probability for the class ID
+        class_id = np.argmax(results[0].probs.data.cpu().numpy())
+        # The confidence is the highest value in that tensor
+        confidence = np.max(results[0].probs.data.cpu().numpy())
         
-    # If an object was found, print its details
-    if best_detection is not None:
-        class_id = int(best_detection.cls[0])
-        confidence = best_detection.conf[0]
-    
-        return class_id, confidence
-    
+        if confidence > 0.5:
+            return class_id, confidence
+        
+    # Return None if no classification was made
     return None, 0.0
-
 # -- Main Program --
 if __name__ == '__main__':
     ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
@@ -54,57 +51,83 @@ if __name__ == '__main__':
         print("Camera sucessfully opened")
         
         # load model
-        model = YOLO(MODEL_PATH)
+        model = YOLO(MODEL_PATH, task='classify')
         print("waiting for HCSR")
         
         # initialize distance
-        prev_dist = -1
+        prev_dist = 35
         curr_dist = None
         diff = 5 # difference 5 cm
         
         # main loop (idle until HCSR detect object)
         while True:
             # Check if there is data in serial
-            if ser.in_waiting > 0:
-                # get Arduino data
-                line = ser.readline().decode('utf-8').rstrip()
-                sensor_part = line.split('|')[0]
-                value_part = sensor_part.split(':')[1]
-                numeric_string = value_part.replace('cm', '')
-                line = numeric_string.strip()
-                
-                # check if  prev_dist already initialize
-                if prev_dist == -1:
-                    prev_dist = float(line)
+            # FIX 1: Read a frame from the camera at the start of every loop
+            ret, frame = cap.read()
+            if not ret:
+                print("ERROR, FAILED to grab frame")
+                break
 
-                # check the arduino message
-                curr_dist = float(line)
-                if abs(prev_dist - curr_dist) > diff:
+            # FIX 2: Show the frame in a window
+            cv2.imshow('Camera Feed', frame)
+
+            # FIX 3: Add waitKey(1). This is ESSENTIAL for imshow to work.
+            # It waits 1ms for a key press and allows the window to update.
+            # Press 'q' to quit the program.
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                print("'q' pressed, stopping program.")
+                break
+            if ser.in_waiting > 0:
+                try:
+                    # get Arduino data and decode it
+                    line = ser.readline().decode('utf-8', errors='ignore').rstrip()                    
+                    sensor_part = line.split('|')[0]
+                    value_part = sensor_part.split('S1:')[1]
+                    numeric_string = value_part.replace('cm', '')
+                    distance_str = numeric_string.strip()
+                        
+                    # Convert the clean string to a float
+                    curr_dist = float(distance_str) 
+
+                except (UnicodeDecodeError, ValueError, IndexError) as e:
+                    print(f"Could not decode or parse serial data: {e}")
+                    ser.flushInput() # Clear the input buffer to remove bad data
+                    continue # Skip to the next loop iteration
+
+                if curr_dist is not None and curr_dist < prev_dist and abs(prev_dist - curr_dist) > diff:
                     print("OBJECT DETECTED, starting camera")
-                    time.sleep(1)
-                    ret, frame = cap.read() 
-                    if not ret:
-                        print("ERROR, FAILE to grab frame")
-                        continue
+                    time.sleep(5)
+                    ret, frame = cap.read()
+                    #if not ret:
+                    #    print("ERROR, FAILED to grab frame")
+                    #    continue
+                    #if ret:
+                    #    cv2.imshow('Camera Feed', frame)
                     
                     # classificate the image
                     class_id, conf = classification(frame, model)
-                    
+
                     # send the class to Arduino
-                    if class_id  is not None:
+                    if class_id is not None:
                         # print result
                         class_name = CLASS_NAMES[class_id]
-                        print(f"Detected {class_name} with {conf} % confidence")
-                        
-                        # Is it organic?
-                        if class_name in ["food_scraps"]:
+                        print(f"Detected {class_name} with {conf*100:.2f}% confidence")
+                        # Initialize command as None
+                        command = None
+
+                        # Is it Battery Waste?
+                        if class_name in ["battery"]:
+                            print("Battery Waste")
+                            command = 2
+                        # Is it Organic?
+                        elif class_name in ["organic_waste", "paper_cardboard"]:
                             print("ORGANIC")
                             command = 0
-                        # Is it inorganic
-                        elif class_name in ["cans", "cardbox", "glass_like_plastic", "paper_material", "plastic"]:
+                        # Is it Inorganic
+                        elif class_name in ["glass", "metal", "plastic", "textiles", "trash"]:
                             print("INORGANIC")
                             command = 1
-                        
+
                         # send command to arduino
                         if command is not None:
                             ser.write(bytes([command]))
@@ -112,7 +135,7 @@ if __name__ == '__main__':
                             print("No class detected")
                     else:
                         print("No object detected")
-                        
+
                     # cooldown for sensor
                     time.sleep(3)
                     ser.flushInput()
@@ -132,3 +155,5 @@ if __name__ == '__main__':
         if cap:
             cap.release()
             print("Camera released.")
+        cv2.destroyAllWindows()
+        print("Camera window closed.")
