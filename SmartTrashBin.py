@@ -78,23 +78,9 @@ if __name__ == '__main__':
                 print("'q' pressed, stopping program.")
                 break
             if ser.in_waiting > 0:
-                try:
-                    # get Arduino data and decode it
-                    line = ser.readline().decode('utf-8', errors='ignore').rstrip()                    
-                    sensor_part = line.split('|')[0]
-                    value_part = sensor_part.split('S1:')[1]
-                    numeric_string = value_part.replace('cm', '')
-                    distance_str = numeric_string.strip()
-                        
-                    # Convert the clean string to a float
-                    curr_dist = float(distance_str) 
+                signal = ser.read().decode('utf-8')
 
-                except (UnicodeDecodeError, ValueError, IndexError) as e:
-                    print(f"Could not decode or parse serial data: {e}")
-                    ser.flushInput() # Clear the input buffer to remove bad data
-                    continue # Skip to the next loop iteration
-
-                if curr_dist is not None and curr_dist < prev_dist and abs(prev_dist - curr_dist) > diff:
+                if signal == 'D':
                     print("OBJECT DETECTED, starting camera")
                     time.sleep(5)
                     ret, frame = cap.read()

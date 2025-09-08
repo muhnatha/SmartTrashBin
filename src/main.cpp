@@ -1,21 +1,37 @@
 #include <Arduino.h>
 #include "ultrasonic.h"
+#include "ServoControl.h"
 
 const int FULL_THRESHOLD_CM = 10;  
-const int INPUT_DETECT_CM = 10;     
+const int ORIGIN_DISTANCE_CM = 35; 
+const int THERE_IS_OBJECT = 5;    
+const unsigned long TIMEOUT_MS = 5000;
 
 void setup() {
   Serial.begin(9600);
   ultrasonicSetup(); 
+  servoSetup();
 }
 
 void loop() {
-    // Deteksi sampah masuk
-  long dIn = readDistanceCM(TRIG_IN, ECHO_IN);
-  if (dIn < INPUT_DETECT_CM) {
+  // Deteksi sampah masuk
+  long distance = readDistanceCM(TRIG_IN, ECHO_IN);
+  if ((distance < (ORIGIN_DISTANCE_CM - THERE_IS_OBJECT))) {
     digitalWrite(LED_PIN, HIGH);    
-    Serial.println(" | Status: Barang Masuk");
-  } 
+    Serial.println("D");
+
+    unsigned long startTime = millis(); 
+    bool commandReceived = false;
+
+    while ((millis() - startTime) < TIMEOUT_MS) {
+      if (Serial.available() > 0) {
+        int command = Serial.read(); 
+        servoLogic(command);        
+        commandReceived = true;    
+        break;                       
+      }
+    }
+  }
   else {
     digitalWrite(LED_PIN, LOW);   
     Serial.println(" | Status: Tidak Ada Barang");
