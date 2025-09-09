@@ -107,7 +107,7 @@ if __name__ == '__main__':
                         print("No object detected")
 
                     # cooldown for sensor
-                    time.sleep(3)
+                    # time.sleep(3)
                     ser.flushInput()
                     
     except KeyboardInterrupt:
