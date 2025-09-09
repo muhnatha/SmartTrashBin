@@ -68,13 +68,19 @@ void loop() {
     digitalWrite(LED_PIN, HIGH);    
     Serial.write('D');
 
+    unsigned long startTime = millis();
+    while (Serial.available() == 0) {
+      if (millis() - startTime >= 5000) {
+        break; // Exit the loop after 3 seconds
+      }
+    }
     int command = Serial.read(); 
     servoLogic(command);        
-    
+
     digitalWrite(LED_PIN, LOW);
   }
   updateServo();
-  delay(100);
+  delay(1000);
   //else {
   //  digitalWrite(LED_PIN, LOW);   
   //  Serial.println(" | Status: Tidak Ada Barang");
