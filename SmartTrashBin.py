@@ -31,8 +31,7 @@ def classification(frame, model):
         # The confidence is the highest value in that tensor
         confidence = np.max(results[0].probs.data.cpu().numpy())
         
-        if confidence > 0.5:
-            return class_id, confidence
+        return class_id, confidence
         
     # Return None if no classification was made
     return None, 0.0
@@ -62,33 +61,18 @@ if __name__ == '__main__':
         # main loop (idle until HCSR detect object)
         while True:
             # Check if there is data in serial
-            # FIX 1: Read a frame from the camera at the start of every loop
             ret, frame = cap.read()
             if not ret:
                 print("ERROR, FAILED to grab frame")
                 break
-
-            # FIX 2: Show the frame in a window
-            cv2.imshow('Camera Feed', frame)
-
-            # FIX 3: Add waitKey(1). This is ESSENTIAL for imshow to work.
-            # It waits 1ms for a key press and allows the window to update.
-            # Press 'q' to quit the program.
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                print("'q' pressed, stopping program.")
-                break
+            
             if ser.in_waiting > 0:
                 signal = ser.read().decode('utf-8')
 
                 if signal == 'D':
                     print("OBJECT DETECTED, starting camera")
-                    time.sleep(5)
+                    #  time.sleep(1)
                     ret, frame = cap.read()
-                    #if not ret:
-                    #    print("ERROR, FAILED to grab frame")
-                    #    continue
-                    #if ret:
-                    #    cv2.imshow('Camera Feed', frame)
                     
                     # classificate the image
                     class_id, conf = classification(frame, model)
@@ -112,7 +96,7 @@ if __name__ == '__main__':
                         # Is it Inorganic
                         elif class_name in ["glass", "metal", "plastic", "textiles", "trash"]:
                             print("INORGANIC")
-                            command = 1
+                            command = 0
 
                         # send command to arduino
                         if command is not None:
