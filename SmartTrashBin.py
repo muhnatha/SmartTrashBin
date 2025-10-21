@@ -92,7 +92,7 @@ if __name__ == '__main__':
                         # Is it Organic?
                         elif class_name in ["organic_waste", "paper_cardboard"]:
                             print("ORGANIC")
-                            command = 0
+                            command = 1
                         # Is it Inorganic
                         elif class_name in ["glass", "metal", "plastic", "textiles", "trash"]:
                             print("INORGANIC")
