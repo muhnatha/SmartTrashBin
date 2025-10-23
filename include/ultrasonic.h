@@ -11,8 +11,8 @@
 #define ECHO3 7
 
 // Input sensor
-#define TRIG_IN 9
-#define ECHO_IN 10
+#define TRIG_IN 11
+#define ECHO_IN 12
 
 // LED  
 #define LED_PIN 8
