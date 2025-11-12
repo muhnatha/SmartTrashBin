@@ -2,10 +2,8 @@
 #include <Servo.h>
 #include "ultrasonic.h"
 
-const int FULL_THRESHOLD_CM = 10;  
-const int ORIGIN_DISTANCE_CM = 35; 
-const int THERE_IS_OBJECT = 5;     
-const unsigned long TIMEOUT_MS = 2000;
+const int MAX_DETECTION_DISTANCE_CM = 10; // Jarak trigger (lebih dekat dari ini = ada objek)
+const int MIN_DETECTION_DISTANCE_CM = 3;  // Jarak minimum (anti-noise)
 
 #define SERVO_RECYCLE 6   // Servo kiri (Recycle)
 #define SERVO_ORGANIC 9   // Servo tengah (Organic)
@@ -24,6 +22,7 @@ bool servoActive = false;
 int activeCommand = -1; // 0=Recycle, 1=Organic, 2=B3
 volatile bool newCommandReceived = false;
 volatile char raspiCommand = -1; // Stores the '0', '1', or '2'
+bool objectAlreadyDetected = false;
 
 void servoSetup() {
   servoRecycle.attach(SERVO_RECYCLE);
@@ -101,7 +100,8 @@ void updateServo() {
         break;
     }
     servoActive = false;
-    activeCommand = -1;
+    activeCommand = -1;\
+    objectAlreadyDetected = false; // reset flag
     Serial.println(">> Servo returned to initial position");
   }
 }
@@ -120,12 +120,13 @@ void setup() {
 void loop() {
   // Cek apakah ada objek di depan sensor 
   long distance = readDistanceCM(TRIG_IN, ECHO_IN);
+  bool isObjectPresent = (distance > MIN_DETECTION_DISTANCE_CM) && (distance < MAX_DETECTION_DISTANCE_CM);
 
   // Only send 'D' if a servo is not already active
-  if (!servoActive && (distance > 0) && (distance < ORIGIN_DISTANCE_CM) && ((ORIGIN_DISTANCE_CM - distance) > THERE_IS_OBJECT)) {
+  if (!servoActive && isObjectPresent && !objectAlreadyDetected) {
     Serial.write('D');  // kirim sinyal ke Raspberry Pi
     Serial.println(" >> Object detected, sending 'D' to Raspi");
-    // We no longer wait here! The loop continues.
+    objectAlreadyDetected = true;
   }
 
   // Cek apakah ada perintah BARU from Raspi 
