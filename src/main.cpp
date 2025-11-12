@@ -13,8 +13,11 @@ Servo servoRecycle;
 Servo servoOrganic;
 Servo servoB3;
 
-const int POS_RECYCLE_DEFAULT = 120;
-const int POS_ORGANIC_DEFAULT = 115;
+
+
+
+const int POS_RECYCLE_DEFAULT = 110;
+const int POS_ORGANIC_DEFAULT = 110;
 const int POS_B3_DEFAULT = 180;
 
 unsigned long servoStartTime = 0;
@@ -134,6 +137,7 @@ void loop() {
   if (newCommandReceived) {
     newCommandReceived = false; // Reset the flag
 
+
     if (raspiCommand == '0') servoLogic(0);
     else if (raspiCommand == '1') servoLogic(1);
     else if (raspiCommand == '2') servoLogic(2);
@@ -153,14 +157,24 @@ void serialEvent() {
     // Read the incoming character
     char input = (char)Serial.read();
 
+    // Debug: print every incoming character for visibility
+    Serial.print("Received from Raspi: ");
+    Serial.println(input);
+
     // Check if it's a valid command and no command is already pending
     if ((input == '0' || input == '1' || input == '2') && !newCommandReceived) {
       raspiCommand = input;       // Store the command
       newCommandReceived = true;  // Set the flag for the main loop
+
+      Serial.print(">> Valid command detected: ");
+      Serial.println(raspiCommand);
+    } 
+    else if (input != '\n' && input != '\r') {
+      Serial.println(">> Ignored invalid character");
     }
-    // else: ignore other characters (like newlines)
   }
 }
+
 
 
 //-------- SERIAL MONITOR TEST MODE FOR SERVOS --------
